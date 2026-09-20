@@ -23,15 +23,24 @@ steps:
       # output: type=docker is required, not an optimization — see
       # kampascluster/docs/woodpecker-pipeline-example.yml for why.
       output: type=docker
-      # Without this, the buildx docker-container driver creates its own
-      # isolated bridge network for the nested buildkit container, whose
-      # default MTU doesn't match this cluster's Flannel VXLAN overlay.
-      # Small requests (DNS, HTML index pages) succeed; larger transfers
-      # (apk/npm package downloads) connect, then silently hang forever
-      # with zero CPU use — confirmed live (2026-09-20): a RUN step stuck
-      # 48+ minutes on `apk add python3 make g++ linux-headers`, while the
-      # outer CI pod reached the same host fine. `network=host` makes the
-      # buildkit container share the CI pod's already-correct network
-      # namespace instead of its own bridge.
-      buildkit_driveropt:
-        - network=host
+      # The docker-container buildx driver creates its own bridge network
+      # for the nested buildkit container, defaulting to MTU 1500 -- which
+      # doesn't match this cluster's Flannel VXLAN overlay (1450, 50 bytes
+      # of encapsulation overhead). Small requests (DNS, small HTTP
+      # responses) succeed; larger transfers (apk/npm package downloads)
+      # connect, then silently hang forever at zero CPU -- confirmed live
+      # (2026-09-20): a RUN step stuck 48+ minutes on
+      # `apk add python3 make g++ linux-headers`, while the outer CI pod
+      # reached the same host fine. `mtu` here becomes `dockerd --mtu`,
+      # which sets the default MTU Docker uses for every network it
+      # creates, including buildx's nested one.
+      #
+      # (buildkit_driveropt: network=host was tried first and had no
+      # effect -- the deployed plugin image's `docker buildx create`
+      # never received a --driver-opt flag despite that setting existing
+      # in the plugin's current source, so either an older image is
+      # pinned or something else strips it. `mtu` is the daemon-level
+      # setting instead, one layer earlier and confirmed to reach
+      # `dockerd` via `debug: true` below.)
+      mtu: "1450"
+      debug: true
