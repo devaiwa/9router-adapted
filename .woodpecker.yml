@@ -1,0 +1,25 @@
+# Builds in-cluster on kampascluster and pushes to the in-cluster registry.
+# Flux image automation then bumps the tag in kampascluster's
+# kubernetes/apps/ninerouter/ — no tokens, no cross-repo commits from CI.
+#
+# Only the "adapted" branch (master stays a pure mirror of upstream
+# decolua/9router for rebasing) — see kubernetes/apps/ninerouter/README.md
+# in kampascluster for the update workflow.
+when:
+  branch: adapted
+  event: push
+
+steps:
+  build-and-push:
+    image: woodpeckerci/plugin-docker-buildx
+    privileged: true    # requires this repo marked "Trusted" by the Woodpecker admin
+    settings:
+      registry: registry.registry.svc.cluster.local:5000
+      repo: registry.registry.svc.cluster.local:5000/ninerouter
+      tags: ${CI_PIPELINE_NUMBER}
+      insecure: true
+      config: |
+        {"insecure-registries": ["registry.registry.svc.cluster.local:5000"]}
+      # output: type=docker is required, not an optimization — see
+      # kampascluster/docs/woodpecker-pipeline-example.yml for why.
+      output: type=docker
