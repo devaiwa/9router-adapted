@@ -40,7 +40,8 @@ steps:
       # never received a --driver-opt flag despite that setting existing
       # in the plugin's current source, so either an older image is
       # pinned or something else strips it. `mtu` is the daemon-level
-      # setting instead, one layer earlier and confirmed to reach
-      # `dockerd` via `debug: true` below.)
+      # setting instead, one layer earlier -- confirmed via a one-off
+      # `debug: true` run that the flag reaches dockerd
+      # (`dockerd --mtu 1450 ...`) and that the build clears the point it
+      # used to hang at (2026-09-20, build #3: full build, ~3 minutes).
       mtu: "1450"
-      debug: true
