@@ -2,6 +2,13 @@
   <img src="./images/9router.png?1" alt="9Router Dashboard" width="800"/>
   
   # 9Router - FREE AI Router & Token Saver
+
+  > **This is `devaiwa/9router-adapted`**, a fork of
+  > [decolua/9router](https://github.com/decolua/9router). `master` tracks
+  > upstream unmodified; the deployed `adapted` branch removes an
+  > unconditional Google Analytics tag from the dashboard and self-hosts
+  > its font. See `kubernetes/apps/ninerouter/README.md` in
+  > `devaiwa/kampascluster` for details and the upstream-update workflow.
   
   **Never stop coding. Save 20-40% tokens with RTK + auto-fallback to FREE & cheap AI models.**
   
